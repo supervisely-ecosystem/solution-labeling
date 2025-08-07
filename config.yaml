@@ -1,0 +1,95 @@
+# Metadata
+solution:
+  name: "Object Detection Solution"
+  description: "A solution for object detection tasks."
+  # docker_image: "supervisely/base-py-sdk:6.73.398"
+  # instance_version: "6.13.8"
+  # version: "1.0.0"
+
+# Graph settings
+settings:
+  environment:
+    variables:
+      PROJECT_ID: "{{ $PROJECT_ID | default('null') }}"
+  graph:
+    height: "100vh"
+    width: "100%"
+    grid: true
+  positions: &positions
+    cloud_import: &cloud_import_position { x: 680, y: 30 }
+    input_project: &input_project_position { x: 870, y: 150 }
+    notification_1: &notification_position_1 { x: 680, y: 300 }
+    notification_2: &notification_position_2 { x: 980, y: 300 }
+  defaults: &defaults
+    width: 250
+    connection_settings: &defaults_connection_settings
+      startSocket: "bottom"
+      endSocket: "top"
+      path: "grid"
+      dash: false
+      color: "#B1B1B6"
+      size: 1
+      startPlug: "behind"
+      endPlug: "arrow2"
+      startPlugSize: 3
+      endPlugSize: 3
+
+# All nodes in the graph
+nodes:
+  # - id: "state_initialization"
+  #   # placeholder for future state initialization node
+
+  - id: "cloud_import" # unique ID for the node
+    name: "Import from Cloud"
+    description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
+    type: "supervisely.solution.CloudImportNode" # type of the node to import
+    parameters:
+      project_id: "{{ $PROJECT_ID | default('null') }}"
+      <<: *cloud_import_position # x, y
+    publish:
+      - event: "import_finished" # event name to publish after import is finished
+      - event: "automation" # if automation is enabled/disabled
+
+    # # ?? define events that will be triggered after 'run' action
+    # events:
+    #   - topic: "import_finished"
+    #     payload_schema:
+    #       task_id:
+    #         type: "integer"
+    #         description: "ID of the import task"
+
+    # # ?? define fields where import tasks will be stored in the state
+    # state_fields:
+    #   - tasks:
+    #       type: "array"
+    #       description: "List of import tasks"
+    #       items:
+    #         type: "object" # dict
+    #         properties:
+    #           task_id:
+    #             type: "integer" # int
+    #             description: "ID of the import task"
+    #           status:
+    #             type: "string" # str
+    #             description: "Status of the import task"
+    #           created_at:
+    #             type: "string"
+    #             format: "date-time"
+    #             description: "Creation time of the import task"
+    #           images_count:
+    #             type: "integer"
+    #             description: "Number of images in the import task"
+
+  - id: "input_project"
+    name: "Input Project"
+    description: "The Input Project is the central hub for all incoming data. Data in this project will not be modified."
+    type: "supervisely.solution.ProjectNode"
+    parameters:
+      project_id: "{{ $PROJECT_ID | default('null') }}"
+      <<: *input_project_position # x, y
+    source:
+      - id: "cloud_import"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "import_finished" # event to subscribe to

@@ -1,0 +1,5 @@
+apscheduler==3.11.0
+black==25.1.0
+mypy==1.11.0
+mypy-extensions==1.0.0
+git+https://github.com/supervisely/supervisely.git@solution-wip-3
