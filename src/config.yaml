@@ -12,7 +12,7 @@ settings:
     variables:
       PROJECT_ID: "{{ $PROJECT_ID | default('null') }}"
   graph:
-    height: "100vh"
+    height: "1800px"
     width: "100%"
     grid: true
   positions: &positions
@@ -25,6 +25,8 @@ settings:
     labeling_project: &labeling_project_position { x: 870, y: 600 }
     labeling_queue: &labeling_queue_position { x: 860, y: 830 }
     train_val_split: &train_val_split_position { x: 835, y: 1300 }
+    move_labeled_data: &move_labeled_data_position { x: 835, y: 1420 }
+    training_project: &training_project_position { x: 825, y: 1540 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -209,3 +211,33 @@ nodes:
           <<: *defaults_connection_settings
     subscribe:
       - event: "sample_finished" # event to subscribe to
+
+  - id: "move_labeled_data"
+    name: "Move Labeled Data"
+    description: "Move labeled and accepted images to the Training Project."
+    type: "supervisely.solution.MoveLabeledNode"
+    parameters:
+      src_project_id: "{{ $LABELING_PROJECT_ID | default('null') }}"
+      dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      <<: *move_labeled_data_position
+    source:
+      - id: "train_val_split"
+        connection_settings:
+          <<: *defaults_connection_settings
+
+  - id: "training_project"
+    name: &training_project_name "Training Project"
+    description: &training_project_description "Project specifically for training data. All data in this project is in the training process. After training, data will be moved to the Training Project."
+    type: "supervisely.solution.ProjectNode"
+    parameters:
+      is_training: true
+      title: *training_project_name
+      description: *training_project_description
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      <<: *training_project_position
+    source:
+      - id: "move_labeled_data"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "move_labeled_data_finished" # event to subscribe to
