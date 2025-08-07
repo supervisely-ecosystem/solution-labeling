@@ -16,17 +16,22 @@ settings:
     width: "100%"
     grid: true
   positions: &positions
+    auto_import: &auto_import_position { x: 1020, y: 30 }
     cloud_import: &cloud_import_position { x: 680, y: 30 }
     input_project: &input_project_position { x: 870, y: 150 }
-    notification_1: &notification_position_1 { x: 680, y: 300 }
-    notification_2: &notification_position_2 { x: 980, y: 300 }
+    open_ai_clip: &open_ai_clip_position { x: 400, y: 206 }
+    ai_index: &ai_index_position { x: 630, y: 206 }
+    smart_sampling: &smart_sampling_position { x: 835, y: 380 }
+    labeling_project: &labeling_project_position { x: 870, y: 600 }
+    labeling_queue: &labeling_queue_position { x: 860, y: 830 }
+    train_val_split: &train_val_split_position { x: 835, y: 1300 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
       startSocket: "bottom"
       endSocket: "top"
       path: "grid"
-      dash: false
+      dash: false # {"len": 8, "gap": 8}
       color: "#B1B1B6"
       size: 1
       startPlug: "behind"
@@ -38,6 +43,16 @@ settings:
 nodes:
   # - id: "state_initialization"
   #   # placeholder for future state initialization node
+
+  - id: "auto_import" # unique ID for the node
+    name: "Manual D&D Import"
+    description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
+    type: "supervisely.solution.AutoImportNode" # type of the node to import
+    parameters:
+      project_id: "{{ $PROJECT_ID | default('null') }}"
+      <<: *auto_import_position # x, y
+    publish:
+      - event: "import_finished" # event name to publish after import is finished
 
   - id: "cloud_import" # unique ID for the node
     name: "Import from Cloud"
@@ -81,15 +96,116 @@ nodes:
     #             description: "Number of images in the import task"
 
   - id: "input_project"
-    name: "Input Project"
-    description: "The Input Project is the central hub for all incoming data. Data in this project will not be modified."
+    name: &input_project_name "Input Project"
+    description: &input_project_description "The Input Project is the central hub for all incoming data. Data in this project will not be modified."
     type: "supervisely.solution.ProjectNode"
     parameters:
+      title: *input_project_name
+      description: *input_project_description
       project_id: "{{ $PROJECT_ID | default('null') }}"
       <<: *input_project_position # x, y
     source:
       - id: "cloud_import"
         connection_settings:
           <<: *defaults_connection_settings
+      - id: "auto_import"
+        connection_settings:
+          <<: *defaults_connection_settings
+      - id: "ai_index"
+        connection_settings:
+          <<: *defaults_connection_settings
+          startSocket: "right"
+          endSocket: "left"
+          dash: { "len": 8, "gap": 8 }
+          endPlug: "behind"
     subscribe:
       - event: "import_finished" # event to subscribe to
+
+  - id: "open_ai_clip"
+    name: &open_ai_clip_name "OpenAI CLIP"
+    description: &open_ai_clip_description "OpenAI CLIP is a powerful model that can be used to generate embeddings for images in your project. These embeddings can be used for various tasks, such as image similarity search, prompt-based image retrieval. In this application, it is used to create an index and search images based on text prompts or clusters."
+    type: "supervisely.solution.EmptyNode"
+    parameters:
+      title: *open_ai_clip_name
+      description: *open_ai_clip_description
+      <<: *open_ai_clip_position # x, y
+      icon: "zmdi zmdi-apps"
+      width: 150
+
+  - id: "ai_index"
+    name: &ai_index_name "AI Index"
+    description: &ai_index_description "AI Search Index is a powerful tool that allows you to search for images in your dataset using AI models. It provides a quick and efficient way to find similar images based on visual features. You can use it in Smart Sampling node to select images for labeling based on specified prompt."
+    type: "supervisely.solution.EmptyNode"
+    parameters:
+      title: *ai_index_name
+      description: *ai_index_description
+      <<: *ai_index_position # x, y
+      icon: "zmdi zmdi-apps"
+      width: 150
+    source:
+      - id: "open_ai_clip"
+        connection_settings:
+          <<: *defaults_connection_settings
+          startSocket: "right"
+          endSocket: "left"
+          dash: { "len": 8, "gap": 8 }
+          endPlug: "behind"
+
+  - id: "smart_sampling"
+    name: "Smart Sampling"
+    description: "Selects a data sample from the input project and copies it to the labeling project. Supports various sampling strategies: random, k-means clustering, diversity-based, or using embeddings precomputed by the “AI Index” node for smarter selection."
+    type: "supervisely.solution.SmartSamplingNode"
+    parameters:
+      project_id: "{{ $PROJECT_ID | default('null') }}"
+      dst_project: "{{ $LABELING_PROJECT_ID | default('null') }}"
+      <<: *smart_sampling_position # x, y
+    source:
+      - id: "input_project"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "import_finished" # event to subscribe to
+
+  - id: "labeling_project"
+    name: &labeling_project_name "Labeling Project"
+    description: &labeling_project_description "Project specifically for labeling data. All data in this project is in the labeling process. After labeling, data will be moved to the Training Project."
+    type: "supervisely.solution.ProjectNode"
+    parameters:
+      title: *labeling_project_name
+      description: *labeling_project_description
+      project_id: "{{ $LABELING_PROJECT_ID | default('null') }}"
+      <<: *labeling_project_position
+    source:
+      - id: "smart_sampling"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "import_finished" # event to subscribe to
+
+  - id: "labeling_queue"
+    name: "Labeling Queue"
+    description: "Labeling Queue management. Labeling queue is a full annotation workflow where annotators pick the next available image from a shared queue. Once labeled, images are sent for review and quality check. Rejected images return to the same annotator."
+    type: "supervisely.solution.LabelingQueueNode"
+    parameters:
+      <<: *labeling_queue_position
+      queue_id: "{{ $LABELING_QUEUE_ID | default('null') }}"
+      collection_id: "{{ $LABELING_COLLECTION_ID | default('null') }}"
+    source:
+      - id: "labeling_project"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "sample_finished" # event to subscribe to
+
+  - id: "train_val_split"
+    name: "Train/Val Split"
+    description: "Split dataset into Train and Validation sets for model training. Datasets structure mirrors the Input Project with splits organized in corresponding Collections (e.g., 'train_1', 'val_1', etc.)."
+    type: "supervisely.solution.TrainValSplitNode"
+    parameters:
+      <<: *train_val_split_position
+    source:
+      - id: "labeling_queue"
+        connection_settings:
+          <<: *defaults_connection_settings
+    subscribe:
+      - event: "sample_finished" # event to subscribe to
