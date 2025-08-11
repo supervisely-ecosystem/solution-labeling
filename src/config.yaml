@@ -16,8 +16,8 @@ settings:
     width: "100%"
     grid: true
   positions: &positions
-    auto_import: &auto_import_position { x: 770, y: 30 }
-    cloud_import: &cloud_import_position { x: 430, y: 30 }
+    # auto_import: &auto_import_position { x: 770, y: 30 }
+    cloud_import: &cloud_import_position { x: 585, y: 30 }
     input_project: &input_project_position { x: 620, y: 150 }
     open_ai_clip: &open_ai_clip_position { x: 150, y: 206 }
     ai_index: &ai_index_position { x: 380, y: 206 }
@@ -46,16 +46,16 @@ nodes:
   # - id: "state_initialization"
   #   # placeholder for future state initialization node
 
-  - id: "auto_import" # unique ID for the node
-    name: "Manual D&D Import"
-    description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
-    type: "supervisely.solution.AutoImportNode" # type of the node to import
-    parameters:
-      project_id: "{{ $PROJECT_ID | default('null') }}"
-      <<: *auto_import_position # x, y
-    events:
-      subscribe: [] # events to subscribe to
-      publish: [] # events to publish after import is started
+  # - id: "auto_import" # unique ID for the node
+  #   name: "Manual D&D Import"
+  #   description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
+  #   type: "supervisely.solution.AutoImportNode" # type of the node to import
+  #   parameters:
+  #     project_id: "{{ $PROJECT_ID | default('null') }}"
+  #     <<: *auto_import_position # x, y
+  #   events:
+  #     subscribe: [] # events to subscribe to
+  #     publish: [] # events to publish after import is started
 
   - id: "cloud_import" # unique ID for the node
     name: "Import from Cloud"
@@ -112,9 +112,9 @@ nodes:
       - id: "cloud_import"
         connection_settings:
           <<: *defaults_connection_settings
-      - id: "auto_import"
-        connection_settings:
-          <<: *defaults_connection_settings
+      # - id: "auto_import"
+      #   connection_settings:
+      #     <<: *defaults_connection_settings
       - id: "ai_index"
         connection_settings:
           <<: *defaults_connection_settings
@@ -203,7 +203,7 @@ nodes:
           <<: *defaults_connection_settings
     events:
       subscribe: ["sample_finished"] # events to subscribe to
-      publish: ["labeling_queue_info_refresh", "images_to_move"] # events to publish after move labeled data is
+      publish: ["images_to_move"] # events to publish after move labeled data is
 
   - id: "train_val_split"
     name: "Train/Val Split"
@@ -217,7 +217,7 @@ nodes:
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: ["labeling_queue_info_refresh", "move_labeled_data_finished"] # events to subscribe to
+      subscribe: ["images_to_move", "move_labeled_data_finished"] # events to subscribe to
       publish: ["train_val_split_finished"] # events to publish after train/val split is finished
 
   - id: "move_labeled_data"
