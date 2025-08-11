@@ -185,7 +185,7 @@ nodes:
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: ["sample_finished"] # events to subscribe to
+      subscribe: ["sample_finished", "train_val_split_finished"] # events to subscribe to
       publish: [] # events to publish after sample is finished
 
   - id: "labeling_queue"
@@ -202,21 +202,22 @@ nodes:
           <<: *defaults_connection_settings
     events:
       subscribe: ["sample_finished"] # events to subscribe to
-      publish: ["refresh_labeling_queue_info"] # events to publish after move labeled data is
+      publish: ["labeling_queue_info_refresh", "images_to_move"] # events to publish after move labeled data is
 
   - id: "train_val_split"
     name: "Train/Val Split"
     description: "Split dataset into Train and Validation sets for model training. Datasets structure mirrors the Input Project with splits organized in corresponding Collections (e.g., 'train_1', 'val_1', etc.)."
     type: "supervisely.solution.TrainValSplitNode"
     parameters:
+      dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *train_val_split_position
     source:
       - id: "labeling_queue"
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: ["sample_finished", "refresh_labeling_queue_info"] # events to subscribe to
-      publish: [] # events to publish after train/val split is finished
+      subscribe: ["labeling_queue_info_refresh", "move_labeled_data_finished"] # events to subscribe to
+      publish: ["train_val_split_finished"] # events to publish after train/val split is finished
 
   - id: "move_labeled_data"
     name: "Move Labeled Data"
@@ -231,7 +232,7 @@ nodes:
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: [] # events to subscribe to
+      subscribe: ["images_to_move"] # events to subscribe to
       publish: ["move_labeled_data_finished"] # events to publish after move labeled data is
 
   - id: "training_project"
@@ -249,5 +250,5 @@ nodes:
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: ["move_labeled_data_finished"] # events to subscribe to
+      subscribe: ["train_val_split_finished"] # events to subscribe to
       publish: [] # events to publish after move labeled data is finished
