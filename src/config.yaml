@@ -16,17 +16,17 @@ settings:
     width: "100%"
     grid: true
   positions: &positions
-    auto_import: &auto_import_position { x: 670, y: 30 }
-    cloud_import: &cloud_import_position { x: 330, y: 30 }
-    input_project: &input_project_position { x: 520, y: 150 }
-    open_ai_clip: &open_ai_clip_position { x: 50, y: 206 }
-    ai_index: &ai_index_position { x: 280, y: 206 }
-    smart_sampling: &smart_sampling_position { x: 485, y: 380 }
-    labeling_project: &labeling_project_position { x: 520, y: 500 }
-    labeling_queue: &labeling_queue_position { x: 510, y: 730 }
-    train_val_split: &train_val_split_position { x: 485, y: 1250 }
-    move_labeled_data: &move_labeled_data_position { x: 485, y: 1370 }
-    training_project: &training_project_position { x: 475, y: 1490 }
+    auto_import: &auto_import_position { x: 770, y: 30 }
+      cloud_import: &cloud_import_position { x: 430, y: 30 }
+      input_project: &input_project_position { x: 620, y: 150 }
+      open_ai_clip: &open_ai_clip_position { x: 150, y: 206 }
+      ai_index: &ai_index_position { x: 380, y: 206 }
+      smart_sampling: &smart_sampling_position { x: 585, y: 380 }
+      labeling_project: &labeling_project_position { x: 620, y: 500 }
+      labeling_queue: &labeling_queue_position { x: 610, y: 730 }
+      train_val_split: &train_val_split_position { x: 585, y: 1150 }
+      move_labeled_data: &move_labeled_data_position { x: 585, y: 1270 }
+      training_project: &training_project_position { x: 575, y: 1390 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -106,6 +106,7 @@ nodes:
       title: *input_project_name
       description: *input_project_description
       project_id: "{{ $PROJECT_ID | default('null') }}"
+      tooltip_position: "right"
       <<: *input_project_position # x, y
     source:
       - id: "cloud_import"
