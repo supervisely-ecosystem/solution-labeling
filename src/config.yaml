@@ -59,7 +59,7 @@ nodes:
       <<: *auto_import_position # x, y
     events:
       subscribe: [] # events to subscribe to
-      publish: [] # events to publish after import is started
+      publish: ["import_finished"] # events to publish after import is started
 
   - id: "cloud_import" # unique ID for the node
     name: "Import from Cloud"
