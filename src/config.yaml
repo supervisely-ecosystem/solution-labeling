@@ -16,17 +16,20 @@ settings:
     width: "100%"
     grid: true
   positions: &positions
-    # auto_import: &auto_import_position { x: 770, y: 30 }
-    cloud_import: &cloud_import_position { x: 585, y: 30 }
+    auto_import: &auto_import_position { x: 770, y: 30 }
+    cloud_import: &cloud_import_position { x: 430, y: 30 }
     input_project: &input_project_position { x: 620, y: 150 }
     open_ai_clip: &open_ai_clip_position { x: 150, y: 206 }
     ai_index: &ai_index_position { x: 380, y: 206 }
     smart_sampling: &smart_sampling_position { x: 585, y: 380 }
     labeling_project: &labeling_project_position { x: 620, y: 500 }
     labeling_queue: &labeling_queue_position { x: 610, y: 730 }
+    labeling_queue_performance:
+      &labeling_queue_performance_position { x: 950, y: 729 }
     train_val_split: &train_val_split_position { x: 585, y: 1150 }
     move_labeled_data: &move_labeled_data_position { x: 585, y: 1270 }
     training_project: &training_project_position { x: 575, y: 1390 }
+    training_project_stats: &training_project_stats_position { x: 950, y: 1389 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -46,16 +49,17 @@ nodes:
   # - id: "state_initialization"
   #   # placeholder for future state initialization node
 
-  # - id: "auto_import" # unique ID for the node
-  #   name: "Manual D&D Import"
-  #   description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
-  #   type: "supervisely.solution.AutoImportNode" # type of the node to import
-  #   parameters:
-  #     project_id: "{{ $PROJECT_ID | default('null') }}"
-  #     <<: *auto_import_position # x, y
-  #   events:
-  #     subscribe: [] # events to subscribe to
-  #     publish: [] # events to publish after import is started
+  - id: "auto_import" # unique ID for the node
+    name: "Manual D&D Import"
+    description: "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
+    type: "supervisely.solution.AutoImportNode" # type of the node to import
+    parameters:
+      project_id: "{{ $PROJECT_ID | default('null') }}"
+      tooltip_position: "right"
+      <<: *auto_import_position # x, y
+    events:
+      subscribe: [] # events to subscribe to
+      publish: [] # events to publish after import is started
 
   - id: "cloud_import" # unique ID for the node
     name: "Import from Cloud"
@@ -112,9 +116,9 @@ nodes:
       - id: "cloud_import"
         connection_settings:
           <<: *defaults_connection_settings
-      # - id: "auto_import"
-      #   connection_settings:
-      #     <<: *defaults_connection_settings
+      - id: "auto_import"
+        connection_settings:
+          <<: *defaults_connection_settings
       - id: "ai_index"
         connection_settings:
           <<: *defaults_connection_settings
@@ -201,9 +205,30 @@ nodes:
       - id: "labeling_project"
         connection_settings:
           <<: *defaults_connection_settings
+      - id: "labeling_queue_performance"
+        connection_settings:
+          <<: *defaults_connection_settings
+          startSocket: "left"
+          endSocket: "right"
+          dash: { "len": 8, "gap": 8 }
+          startPlug: "disc"
+          pointAnchor: { "x": "100%", "y": 29 }
     events:
       subscribe: ["sample_finished"] # events to subscribe to
       publish: ["images_to_move"] # events to publish after move labeled data is
+
+  - id: "labeling_queue_performance"
+    name: &labeling_queue_performance_title "Labeling Performance"
+    description: &labeling_queue_performance_description "Labeling Queue performance metrics. This node tracks the performance of labeling jobs in the Labeling Queue. It provides real-time statistics on the number of images being labeled, reviewed, and approved."
+    type: "supervisely.solution.LabelingQueuePerformanceNode"
+    parameters:
+      <<: *labeling_queue_performance_position
+      title: *labeling_queue_performance_title
+      description: *labeling_queue_performance_description
+      queue_id: "{{ $LABELING_QUEUE_ID | default('null') }}"
+    events:
+      subscribe: []
+      publish: []
 
   - id: "train_val_split"
     name: "Train/Val Split"
@@ -250,6 +275,29 @@ nodes:
       - id: "move_labeled_data"
         connection_settings:
           <<: *defaults_connection_settings
+      - id: "training_project_stats"
+        connection_settings:
+          <<: *defaults_connection_settings
+          startSocket: "left"
+          endSocket: "right"
+          dash: { "len": 8, "gap": 8 }
+          startPlug: "disc"
+          pointAnchor: { "x": "100%", "y": 29 }
     events:
       subscribe: ["train_val_split_finished"] # events to subscribe to
       publish: [] # events to publish after move labeled data is finished
+
+  - id: "training_project_stats"
+    name: &training_project_stats_name "QA & Stats"
+    description: &training_project_stats_description "Open the QA & Stats page to explore detailed insights into the training project.."
+    type: "supervisely.solution.LinkNode"
+    parameters:
+      title: *training_project_stats_name
+      description: *training_project_stats_description
+      <<: *training_project_stats_position
+      icon: "zmdi zmdi-chart"
+      link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/stats/datasets"
+      tooltip_position: "right"
+    events:
+      subscribe: []
+      publish: []
