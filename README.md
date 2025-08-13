@@ -24,42 +24,51 @@ This application helps you run the full end‑to‑end workflow for object detec
 You can launch the app on a new or an existing project:
 
 1. Find the “Data Labeling Workflow” app in the Supervisely Ecosystem.
-1. Select the project in the Supervisely interface.
-3. Choose an existing project or start from scratch — the app will automatically prepare the connected structure: a separate __Labeling Project__, a __Training Project__, a __labeling collection__, and a __Labeling Queue__.
-4. In the run parameters, set `Restart Policy: onError`.
+2. Select an existing project or start from scratch — the app will automatically prepare the connected structure: a separate __Labeling Project__, a __Training Project__, a __labeling collection__, and a __Labeling Queue__.
+3. In the run parameters, set `Restart Policy: onError`.
+4. Click Run. You will see the graph interface with available actions and status indicators.
+
    - **Important:** use `onError` to enable recovery mode. If the task crashes unexpectedly, the app will restart and restore its history.
-5. Click Run. You will see the graph interface with available actions and status indicators.
 
 ## Graph structure: key steps
 Below are the main nodes you will see on the graph (names match the interface):
 
-- Import from Cloud
+**Import from Cloud**
+
   - Imports data from cloud sources. Each import creates a separate dataset in the Input Project. Popular annotation formats are supported.
 
-- Input Project
+**Input Project**
+
   - The central “entry” project where all imported data is stored. Data here is not modified — it is used for further selection and analysis.
 
-- OpenAI CLIP and AI Index
+**OpenAI CLIP and AI Index**
+
   - Nodes for semantic search and embeddings. Used together with Smart Sampling to select images by text prompts, similarity, or clusters.
 
-- Smart Sampling
+**Smart Sampling**
+
   - Selects a subset of data from the Input Project into the Labeling Project. Supports multiple strategies: random, diversity, clustering, and AI‑index‑based (calculated via the OpenAI CLIP model). The selected data is copied to the Labeling Project for further work.
 
-- Labeling Project
+**Labeling Project**
+
   - A dedicated project that receives the data subset for annotation. All labeling operations are performed here. It serves as an intermediate step before moving approved data to the Training Project.
 
-- Labeling Queue
+**Labeling Queue**
+
   - Manages the annotation queue: annotators pick the next available item, then images go to review. Rejected items return to the same annotator.
   - Real‑time counters show:
     - How many images are currently being labeled.
     - How many are in review or waiting for review.
     - How many are already approved and ready to be moved to the training project.
 
-- Train/Val Split
+**Train/Val Split**
+
   - Splits data into training and validation sets. The structure mirrors the source organization, and the splits are collected into corresponding collections that can be used for model training.
 
-- Move Labeled Data
+**Move Labeled Data**
+
   - Moves annotated and approved images to the Training Project.
 
-- Training Project
+**Training Project**
+
   - The project for model training. It accumulates the finalized, verified data from the labeling process. New nodes for training, evaluation, comparison, and deployment can be connected to this card later.
