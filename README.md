@@ -2,7 +2,7 @@
 
 This application helps you run the full end‑to‑end workflow for object detection datasets: import, smart sampling, labeling, review, moving approved data to a training project, and preparing train/val splits. Everything is controlled through a visual graph of nodes (cards) directly in the platform interface.
 
-![Application overview](./app-overview.png)
+![Application overview](https://github.com/supervisely-ecosystem/solution-labeling/releases/download/v0.0.1/app_overview.png)
 
 ## Features
 - Visual workflow graph with clear steps and status indicators.
@@ -15,10 +15,10 @@ This application helps you run the full end‑to‑end workflow for object detec
 - Some nodes may trigger other applications (e.g., for copying or importing data) — such actions are started as separate tasks and are visible in the history.
 
 *Task history example:*
-![Task history](./task-history.png)
+![Task history](https://github.com/supervisely-ecosystem/solution-labeling/releases/download/v0.0.1/task_history2.gif)
 
 *Automations example:*
-![Automations](./automations.png)
+![Automations](https://github.com/supervisely-ecosystem/solution-labeling/releases/download/v0.0.1/automation3.gif)
 
 ## How to run
 You can launch the app on a new or an existing project:
