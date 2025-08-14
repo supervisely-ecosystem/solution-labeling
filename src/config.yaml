@@ -133,24 +133,17 @@ nodes:
   - id: "open_ai_clip"
     name: &open_ai_clip_name "OpenAI CLIP"
     description: &open_ai_clip_description "OpenAI CLIP is a powerful model that can be used to generate embeddings for images in your project. These embeddings can be used for various tasks, such as image similarity search, prompt-based image retrieval. In this application, it is used to create an index and search images based on text prompts or clusters."
-    type: "supervisely.solution.EmptyNode"
+    type: "supervisely.solution.OpenAIClipServiceNode"
     parameters:
-      title: *open_ai_clip_name
-      description: *open_ai_clip_description
       <<: *open_ai_clip_position # x, y
-      icon: "zmdi zmdi-apps"
-      width: 150
 
   - id: "ai_index"
     name: &ai_index_name "AI Index"
     description: &ai_index_description "AI Search Index is a powerful tool that allows you to search for images in your dataset using AI models. It provides a quick and efficient way to find similar images based on visual features. You can use it in Smart Sampling node to select images for labeling based on specified prompt."
-    type: "supervisely.solution.EmptyNode"
+    type: "supervisely.solution.AiIndexNode"
     parameters:
-      title: *ai_index_name
-      description: *ai_index_description
       <<: *ai_index_position # x, y
-      icon: "zmdi zmdi-apps"
-      width: 150
+      project_id: "{{ $PROJECT_ID | default('null') }}"
     source:
       - id: "open_ai_clip"
         connection_settings:
