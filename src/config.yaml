@@ -152,6 +152,9 @@ nodes:
           endSocket: "left"
           dash: { "len": 8, "gap": 8 }
           endPlug: "behind"
+    events:
+      subscribe: ["need_embedding_status"] # events to subscribe to
+      publish: ["embedding_status"] # events to publish after sample is finished
 
   - id: "smart_sampling"
     name: "Smart Sampling"
@@ -166,8 +169,8 @@ nodes:
         connection_settings:
           <<: *defaults_connection_settings
     events:
-      subscribe: ["import_finished"] # events to subscribe to
-      publish: ["sample_finished"] # events to publish after sample is finished
+      subscribe: ["import_finished", "embedding_status"] # events to subscribe to
+      publish: ["sample_finished", "need_embedding_status"] # events to publish after sample is finished
 
   - id: "labeling_project"
     name: &labeling_project_name "Labeling Project"
