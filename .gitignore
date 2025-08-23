@@ -13,3 +13,6 @@ wheels/
 ./supervisely
 supervisely
 *.env
+
+
+static/
