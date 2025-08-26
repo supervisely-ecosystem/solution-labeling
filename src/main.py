@@ -6,6 +6,9 @@ graph = sly.solution.GraphBuilder()
 if sly.fs.file_exists("src/config.yaml"):
     graph.load_yaml("src/config.yaml")
 
+static_dir = "static"
+sly.fs.mkdir(static_dir, True)
+
 app = sly.Application(layout=sly.app.widgets.Container([graph, graph.modal]), static_dir="static")
 app.call_before_shutdown(sly.solution.TasksScheduler().shutdown)
 app.call_before_shutdown(sly.solution.PubSubAsync().shutdown)
@@ -13,4 +16,4 @@ app.call_before_shutdown(sly.solution.PubSubAsync().shutdown)
 # # * Restore data and state if available
 sly.app.restore_data_state(sly.env.task_id())
 
-graph._prepare_ui_static("static")
+graph._prepare_ui_static(static_dir)
