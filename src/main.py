@@ -9,7 +9,11 @@ if sly.fs.file_exists("src/config.yaml"):
 static_dir = "static"
 sly.fs.mkdir(static_dir, True)
 
-app = sly.Application(layout=sly.app.widgets.Container([graph, graph.modal]), static_dir="static")
+app = sly.Application(
+    layout=sly.app.widgets.Container([graph, *graph.modals], gap=0),
+    static_dir="static",
+    show_header=False,
+)
 app.call_before_shutdown(sly.solution.TasksScheduler().shutdown)
 app.call_before_shutdown(sly.solution.PubSubAsync().shutdown)
 

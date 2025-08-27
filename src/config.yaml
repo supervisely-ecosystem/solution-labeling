@@ -345,9 +345,9 @@ connections:
     style:
       strokeDasharray: "8,8"
 
-  - id: "edge-ai_index-to-open_ai_clip"
-    source: *ai_index_id
-    target: *open_ai_clip_id
+  - id: "edge-open_ai_clip-to-ai_index"
+    source: *open_ai_clip_id
+    target: *ai_index_id
     <<: *defaults_connection_settings
     style:
       # stroke: "#B1B1B6"
