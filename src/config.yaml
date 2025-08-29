@@ -28,8 +28,10 @@ settings:
       &labeling_queue_performance_position { x: 950, y: 620 }
     move_labeled_data: &move_labeled_data_position { x: 612, y: 910 }
     train_val_split: &train_val_split_position { x: 612, y: 990 }
-    training_project: &training_project_position { x: 600, y: 1090 }
+    training_project: &training_project_position { x: 620, y: 1090 }
     training_project_stats: &training_project_stats_position { x: 950, y: 1090 }
+    data_versioning: &data_versioning_position { x: 612, y: 1180 }
+    pretrained_models: &pretrained_models_position { x: 612, y: 1270 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -327,6 +329,46 @@ nodes:
       subscribe: []
       publish: []
 
+  - id: &data_versioning_id "data_versioning"
+    name: &data_versioning_name "Data Versioning"
+    description: &data_versioning_description "Open the project versions page to explore the training project history changes."
+    type: "supervisely.solution.DataVersioningNode"
+    parameters:
+      title: *data_versioning_name
+      description: *data_versioning_description
+      <<: *data_versioning_position
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-history"
+      link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/versions"
+      tooltip_position: "right"
+    source:
+      - id: "training_project"
+        connection_settings:
+          <<: *defaults_connection_settings
+    events:
+      subscribe: []
+      publish: []
+
+  - id: &pretrained_models_id "pretrained_models"
+    name: &pretrained_models_name "Pretrained Models"
+    description: &pretrained_models_description "Select pretrained models and apply them to the training project."
+    type: "supervisely.solution.PretrainedModelsNode"
+    parameters:
+      title: *pretrained_models_name
+      description: *pretrained_models_description
+      <<: *pretrained_models_position
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-robot"
+      icon_color: "#1976D2"
+      icon_bg_color: "#E3F2FD"
+    source:
+      - id: "data_versioning"
+        connection_settings:
+          <<: *defaults_connection_settings
+    events:
+      subscribe: []
+      publish: []
+
 connections:
   - id: "edge-auto_import-to-input_project"
     source: *auto_import_id
@@ -406,6 +448,20 @@ connections:
   - id: "edge-training_project-to-training_project_stats"
     source: *training_project_id
     target: *training_project_stats_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-training_project-to-data_versioning"
+    source: *training_project_id
+    target: *data_versioning_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-data_versioning-to-pretrained_models"
+    source: *data_versioning_id
+    target: *pretrained_models_id
     <<: *defaults_connection_settings
     style:
       strokeDasharray: "8,8"
