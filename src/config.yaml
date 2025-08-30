@@ -30,21 +30,16 @@ settings:
     train_val_split: &train_val_split_position { x: 612, y: 990 }
     training_project: &training_project_position { x: 600, y: 1090 }
     training_project_stats: &training_project_stats_position { x: 950, y: 1090 }
+    all_experiments: &all_experiments_position { x: 1200, y: 1300 }
+    re_evaluate: &re_evaluate_position { x: 1300, y: 1500 }
+    evaluation_report: &evaluation_report_position { x: 1500, y: 1600 }
+    compare_models: &compare_models_position { x: 1334, y: 1800 }
+    comparison_report: &comparison_report_position { x: 1500, y: 1900 }
+    email_notification: &email_notification_position { x: 1500, y: 2000 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
       type: "smoothstep"
-
-      # startSocket: "bottom"
-      # endSocket: "top"
-      # path: "grid"
-      # dash: false # {"len": 8, "gap": 8}
-      # color: "#B1B1B6"
-      # size: 1
-      # startPlug: "behind"
-      # endPlug: "arrow2"
-      # startPlugSize: 3
-      # endPlugSize: 3
 
 # All nodes in the graph
 nodes:
@@ -327,6 +322,75 @@ nodes:
       subscribe: []
       publish: []
 
+  - id: &all_experiments "all_experiments"
+    name: &all_experiments_name "All Experiments"
+    description: &all_experiments_description "Track all experiments in one place. The best model for comparison will be selected from the list of experiments based on the primary metric (mAP for detection, IoU for semantic segmentation)."
+    type: "supervisely.solution.AllExperimentsNode"
+    parameters:
+      title: *all_experiments_name
+      description: *all_experiments_description
+      <<: *all_experiments_position
+      # project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-flask-outline"
+      icon_color: "#1976D2"
+      icon_bg_color: "#E3F2FD"
+      tooltip_position: "right"
+
+  - id: &re_evaluate "re_evaluate"
+    name: &re_evaluate_name "Re-evaluate on new validation dataset"
+    description: &re_evaluate_description "Re-evaluate the best model on a new validation dataset."
+    type: "supervisely.solution.EvaluationNode"
+    parameters:
+      title: *re_evaluate_name
+      description: *re_evaluate_description
+      <<: *re_evaluate_position
+      # project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-chart-box"
+      icon_color: "#1976D2"
+      icon_bg_color: "#E3F2FD"
+      tooltip_position: "right"
+
+  - id: &evaluation_report "evaluation_report"
+    name: &evaluation_report_name "Evaluation Report"
+    description: &evaluation_report_description "View the evaluation report of the model."
+    type: "supervisely.solution.EvaluationReportNode"
+    parameters:
+      title: *evaluation_report_name
+      description: *evaluation_report_description
+      <<: *evaluation_report_position
+      icon: "mdi mdi-file-chart-check"
+
+  - id: &compare_models "compare_models"
+    name: &compare_models_name "Compare Models"
+    description: &compare_models_description "Compare evaluation results from the latest training session against the best model reference report. Helps track performance improvements over time and identify the most effective training setups. If the new model performs better, it can be used to re-deploy the NN model for pre-labeling to speed-up the process."
+    type: "supervisely.solution.CompareModelsNode"
+    parameters:
+      title: *compare_models_name
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      description: *compare_models_description
+      <<: *compare_models_position
+      icon: "mdi mdi-compare"
+
+  - id: &comparison_report "comparison_report"
+    name: &comparison_report_name "Comparison Report"
+    description: &comparison_report_description "View the comparison report of the models."
+    type: "supervisely.solution.EvaluationReportNode"
+    parameters:
+      title: *comparison_report_name
+      description: *comparison_report_description
+      <<: *comparison_report_position
+      icon: "mdi mdi-file-chart-check"
+
+  - id: &email_notification "email_notification"
+    name: &email_notification_name "Email Notification"
+    description: &email_notification_description "Automatically send email notifications after each model comparison. You can configure the recipients and subject of the email."
+    type: "supervisely.solution.EmailNotificationNode"
+    parameters:
+      title: *email_notification_name
+      description: *email_notification_description
+      <<: *email_notification_position
+      icon: "mdi mdi-email"
+
 connections:
   - id: "edge-auto_import-to-input_project"
     source: *auto_import_id
@@ -409,3 +473,28 @@ connections:
     <<: *defaults_connection_settings
     style:
       strokeDasharray: "8,8"
+
+  - id: "edge-all_experiments-to-re_evaluate"
+    source: *all_experiments
+    target: *re_evaluate
+    <<: *defaults_connection_settings
+
+  - id: "edge-re_evaluate-to-evaluation_report"
+    source: *re_evaluate
+    target: *evaluation_report
+    <<: *defaults_connection_settings
+
+  - id: "edge-re_evaluate-to-compare_models"
+    source: *re_evaluate
+    target: *compare_models
+    <<: *defaults_connection_settings
+
+  - id: "edge-compare_models-to-comparison_report"
+    source: *compare_models
+    target: *comparison_report
+    <<: *defaults_connection_settings
+
+  - id: "edge-compare_models-to-email_notification"
+    source: *compare_models
+    target: *email_notification
+    <<: *defaults_connection_settings
