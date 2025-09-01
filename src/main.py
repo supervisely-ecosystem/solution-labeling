@@ -20,4 +20,4 @@ app.call_before_shutdown(sly.solution.PubSubAsync().shutdown)
 # # * Restore data and state if available
 sly.app.restore_data_state(sly.env.task_id())
 
-graph._prepare_ui_static(static_dir)
+graph._prepare_ui_static(app.get_static_dir())
