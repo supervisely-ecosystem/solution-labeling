@@ -28,17 +28,16 @@ settings:
       &labeling_queue_performance_position { x: 950, y: 660 }
     move_labeled_data: &move_labeled_data_position { x: 612, y: 950 }
     train_val_split: &train_val_split_position { x: 612, y: 1040 }
-    training_project: &training_project_position { x: 620, y: 1140 }
+    training_project: &training_project_position { x: 600, y: 1140 }
     training_project_stats: &training_project_stats_position { x: 950, y: 1140 }
-    data_versioning: &data_versioning_position { x: 612, y: 1180 }
-    pretrained_models: &pretrained_models_position { x: 612, y: 1270 }
-    training_experiment: &training_experiment_position { x: 735, y: 1356 }
-    training_artifacts: &training_artifacts_position { x: 735, y: 1418 }
-    training_metrics: &training_metrics_position { x: 735, y: 1480 }
-    training_evaluation: &training_evaluation_position { x: 735, y: 1542 }
+    data_versioning: &data_versioning_position { x: 612, y: 1300 }
+    pretrained_models: &pretrained_models_position { x: 612, y: 1390 }
+    training_experiment: &training_experiment_position { x: 735, y: 1456 }
+    training_artifacts: &training_artifacts_position { x: 735, y: 1518 }
+    training_evaluation: &training_evaluation_position { x: 735, y: 1580 }
     all_experiments: &all_experiments_position { x: 1200, y: 1340 }
     re_evaluate: &re_evaluate_position { x: 1300, y: 1540 }
-    evaluation_report: &evaluation_report_position { x: 1500, y: 1640 }
+    evaluation_report: &re_evaluation_report_position { x: 1500, y: 1640 }
     compare_models: &compare_models_position { x: 1334, y: 1840 }
     comparison_report: &comparison_report_position { x: 1500, y: 1940 }
     email_notification: &email_notification_position { x: 1500, y: 2040 }
@@ -256,16 +255,6 @@ nodes:
       <<: *training_artifacts_position
       icon: "mdi mdi-folder-star"
 
-  - id: &training_metrics_id "training_metrics"
-    name: &training_metrics_name "Training Metrics"
-    description: &training_metrics_description "Open the training session metrics page."
-    type: "supervisely.solution.TrainingMetricsNode"
-    parameters:
-      title: *training_metrics_name
-      description: *training_metrics_description
-      <<: *training_metrics_position
-      icon: "mdi mdi-chart-line-variant"
-
   - id: &training_evaluation_id "training_evaluation"
     name: &training_evaluation_name "Training Evaluation Report"
     description: &training_evaluation_description "View the evaluation report of the trained model."
@@ -473,13 +462,6 @@ connections:
   - id: "edge-pretrained_models-to-training_artifacts"
     source: *pretrained_models_id
     target: *training_artifacts_id
-    <<: *defaults_connection_settings
-    style:
-      strokeDasharray: "8,8"
-
-  - id: "edge-pretrained_models-to-training_metrics"
-    source: *pretrained_models_id
-    target: *training_metrics_id
     <<: *defaults_connection_settings
     style:
       strokeDasharray: "8,8"
