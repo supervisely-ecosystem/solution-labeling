@@ -396,7 +396,7 @@ nodes:
       icon: "mdi mdi-chart-line-variant"
 
   - id: &training_evaluation_id "training_evaluation"
-    name: &training_evaluation_name "Evaluation Report"
+    name: &training_evaluation_name "Training Evaluation Report"
     description: &training_evaluation_description "View the evaluation report of the trained model."
     type: "supervisely.solution.TrainingEvaluationReportNode"
     parameters:
