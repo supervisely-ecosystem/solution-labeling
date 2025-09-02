@@ -22,20 +22,23 @@ settings:
     open_ai_clip: &open_ai_clip_position { x: 150, y: 270 }
     ai_index: &ai_index_position { x: 380, y: 270 }
     smart_sampling: &smart_sampling_position { x: 612, y: 340 }
-    labeling_project: &labeling_project_position { x: 620, y: 430 }
-    labeling_queue: &labeling_queue_position { x: 612, y: 620 }
+    labeling_project: &labeling_project_position { x: 620, y: 470 }
+    labeling_queue: &labeling_queue_position { x: 612, y: 660 }
     labeling_queue_performance:
-      &labeling_queue_performance_position { x: 950, y: 620 }
-    move_labeled_data: &move_labeled_data_position { x: 612, y: 910 }
-    train_val_split: &train_val_split_position { x: 612, y: 990 }
-    training_project: &training_project_position { x: 600, y: 1090 }
-    training_project_stats: &training_project_stats_position { x: 950, y: 1090 }
-    all_experiments: &all_experiments_position { x: 1200, y: 1300 }
-    re_evaluate: &re_evaluate_position { x: 1300, y: 1500 }
-    evaluation_report: &evaluation_report_position { x: 1500, y: 1600 }
-    compare_models: &compare_models_position { x: 1334, y: 1800 }
-    comparison_report: &comparison_report_position { x: 1500, y: 1900 }
-    email_notification: &email_notification_position { x: 1500, y: 2000 }
+      &labeling_queue_performance_position { x: 950, y: 660 }
+    move_labeled_data: &move_labeled_data_position { x: 612, y: 950 }
+    train_val_split: &train_val_split_position { x: 612, y: 1040 }
+    training_project: &training_project_position { x: 600, y: 1140 }
+    training_project_stats: &training_project_stats_position { x: 950, y: 1140 }
+    all_experiments: &all_experiments_position { x: 1200, y: 1340 }
+    re_evaluate: &re_evaluate_position { x: 1300, y: 1540 }
+    evaluation_report: &evaluation_report_position { x: 1500, y: 1640 }
+    compare_models: &compare_models_position { x: 1334, y: 1840 }
+    comparison_report: &comparison_report_position { x: 1500, y: 1940 }
+    email_notification: &email_notification_position { x: 1500, y: 2040 }
+    deploy_pretrained_model:
+      &deploy_pretrained_model_position { x: 1150, y: 425 }
+    pre_labeling: &pre_labeling_position { x: 850, y: 425 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -59,9 +62,6 @@ nodes:
       icon: "mdi mdi-arrow-down-bold-circle"
       icon_color: "#1976D2"
       icon_bg_color: "#E3F2FD"
-    events:
-      subscribe: [] # events to subscribe to
-      publish: ["import_finished"] # events to publish after import is started
 
   - id: &cloud_import_id "cloud_import" # unique ID for the node
     name: &cloud_import_name "Import from Cloud"
@@ -75,39 +75,6 @@ nodes:
       icon: "mdi mdi-cloud-download"
       icon_color: "#1976D2"
       icon_bg_color: "#E3F2FD"
-    events:
-      subscribe: ["import_started"] # events to subscribe to
-      publish: ["import_started", "import_finished"] # events to subscribe to
-
-  #   # # ?? define events that will be triggered after 'run' action
-  #   # events:
-  #   #   - topic: "import_finished"
-  #   #     payload_schema:
-  #   #       task_id:
-  #   #         type: "integer"
-  #   #         description: "ID of the import task"
-
-  #   # # ?? define fields where import tasks will be stored in the state
-  #   # state_fields:
-  #   #   - tasks:
-  #   #       type: "array"
-  #   #       description: "List of import tasks"
-  #   #       items:
-  #   #         type: "object" # dict
-  #   #         properties:
-  #   #           task_id:
-  #   #             type: "integer" # int
-  #   #             description: "ID of the import task"
-  #   #           status:
-  #   #             type: "string" # str
-  #   #             description: "Status of the import task"
-  #   #           created_at:
-  #   #             type: "string"
-  #   #             format: "date-time"
-  #   #             description: "Creation time of the import task"
-  #   #           images_count:
-  #   #             type: "integer"
-  #   #             description: "Number of images in the import task"
 
   - id: &input_project_id "input_project"
     name: &input_project_name "Input Project"
@@ -119,23 +86,6 @@ nodes:
       project_id: "{{ $PROJECT_ID | default('null') }}"
       tooltip_position: "right"
       <<: *input_project_position # x, y
-    source:
-      - id: "cloud_import"
-        connection_settings:
-          <<: *defaults_connection_settings
-      - id: "auto_import"
-        connection_settings:
-          <<: *defaults_connection_settings
-      - id: "ai_index"
-        connection_settings:
-          <<: *defaults_connection_settings
-          startSocket: "right"
-          endSocket: "left"
-          dash: { "len": 8, "gap": 8 }
-          endPlug: "behind"
-    events:
-      subscribe: ["import_finished"] # events to subscribe to
-      publish: [] # events to publish after import is finished
 
   - id: &open_ai_clip_id "open_ai_clip"
     name: &open_ai_clip_name "OpenAI CLIP"
@@ -157,17 +107,6 @@ nodes:
       icon: "mdi mdi-image-search"
       icon_color: "#4CAF50"
       icon_bg_color: "#E8F5E9"
-    source:
-      - id: "open_ai_clip"
-        connection_settings:
-          <<: *defaults_connection_settings
-          startSocket: "right"
-          endSocket: "left"
-          dash: { "len": 8, "gap": 8 }
-          endPlug: "behind"
-    events:
-      subscribe: ["need_embedding_status"] # events to subscribe to
-      publish: ["embedding_status"] # events to publish after sample is finished
 
   - id: &smart_sampling_id "smart_sampling"
     name: "Smart Sampling"
@@ -177,16 +116,6 @@ nodes:
       project_id: "{{ $PROJECT_ID | default('null') }}"
       dst_project: "{{ $LABELING_PROJECT_ID | default('null') }}"
       <<: *smart_sampling_position # x, y
-      icon: "mdi mdi-image-multiple"
-      icon_color: "#1976D2"
-      icon_bg_color: "#E3F2FD"
-    source:
-      - id: "input_project"
-        connection_settings:
-          <<: *defaults_connection_settings
-    events:
-      subscribe: ["import_finished", "embedding_status"] # events to subscribe to
-      publish: ["sample_finished", "need_embedding_status"] # events to publish after sample is finished
 
   - id: &labeling_project_id "labeling_project"
     name: &labeling_project_name "Labeling Project"
@@ -197,13 +126,6 @@ nodes:
       description: *labeling_project_description
       project_id: "{{ $LABELING_PROJECT_ID | default('null') }}"
       <<: *labeling_project_position
-    source:
-      - id: "smart_sampling"
-        connection_settings:
-          <<: *defaults_connection_settings
-    events:
-      subscribe: ["sample_finished", "train_val_split_finished"] # events to subscribe to
-      publish: [] # events to publish after sample is finished
 
   - id: &labeling_queue_id "labeling_queue"
     name: "Labeling Queue"
@@ -213,22 +135,6 @@ nodes:
       <<: *labeling_queue_position
       queue_id: "{{ $LABELING_QUEUE_ID | default('null') }}"
       collection_id: "{{ $LABELING_COLLECTION_ID | default('null') }}"
-      icon: "mdi mdi-label-multiple"
-    source:
-      - id: "labeling_project"
-        connection_settings:
-          <<: *defaults_connection_settings
-      - id: "labeling_queue_performance"
-        connection_settings:
-          <<: *defaults_connection_settings
-          startSocket: "left"
-          endSocket: "right"
-          dash: { "len": 8, "gap": 8 }
-          startPlug: "disc"
-          pointAnchor: { "x": "100%", "y": 29 }
-    events:
-      subscribe: ["sample_finished"] # events to subscribe to
-      publish: ["images_to_move"] # events to publish after move labeled data is
 
   - id: &labeling_queue_performance_id "labeling_queue_performance"
     name: &labeling_queue_performance_title "Labeling Performance"
@@ -243,9 +149,6 @@ nodes:
       icon_color: "#1976D2"
       icon_bg_color: "#E3F2FD"
 
-    events:
-      subscribe: []
-      publish: []
 
   - id: &train_val_split_id "train_val_split"
     name: "Train/Val Split"
@@ -255,13 +158,6 @@ nodes:
       dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *train_val_split_position
       icon: "mdi mdi-set-split"
-    source:
-      - id: "labeling_queue"
-        connection_settings:
-          <<: *defaults_connection_settings
-    events:
-      subscribe: ["images_to_move", "move_labeled_data_finished"] # events to subscribe to
-      publish: ["train_val_split_finished"] # events to publish after train/val split is finished
 
   - id: &move_labeled_data_id "move_labeled_data"
     name: "Move Labeled Data"
@@ -272,13 +168,6 @@ nodes:
       dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *move_labeled_data_position
       icon: "mdi mdi-folder-move"
-    source:
-      - id: "train_val_split"
-        connection_settings:
-          <<: *defaults_connection_settings
-    events:
-      subscribe: ["images_to_move"] # events to subscribe to
-      publish: ["move_labeled_data_finished"] # events to publish after move labeled data is
 
   - id: &training_project_id "training_project"
     name: &training_project_name "Training Project"
@@ -290,21 +179,6 @@ nodes:
       description: *training_project_description
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *training_project_position
-    source:
-      - id: "move_labeled_data"
-        connection_settings:
-          <<: *defaults_connection_settings
-      - id: "training_project_stats"
-        connection_settings:
-          <<: *defaults_connection_settings
-          startSocket: "left"
-          endSocket: "right"
-          dash: { "len": 8, "gap": 8 }
-          startPlug: "disc"
-          pointAnchor: { "x": "100%", "y": 29 }
-    events:
-      subscribe: ["train_val_split_finished"] # events to subscribe to
-      publish: [] # events to publish after move labeled data is finished
 
   - id: &training_project_stats_id "training_project_stats"
     name: &training_project_stats_name "QA & Stats"
@@ -317,10 +191,6 @@ nodes:
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       icon: "mdi mdi-chart-bar"
       link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/stats/datasets"
-      tooltip_position: "right"
-    events:
-      subscribe: []
-      publish: []
 
   - id: &all_experiments "all_experiments"
     name: &all_experiments_name "All Experiments"
@@ -390,6 +260,27 @@ nodes:
       description: *email_notification_description
       <<: *email_notification_position
       icon: "mdi mdi-email"
+
+  - id: &deploy_pretrained_model_id "deploy_pretrained_model"
+    name: &deploy_pretrained_model_name "Deploy Pretrained Model"
+    description: &deploy_pretrained_model_description "Deploy a pretrained model for pre-labeling to speed up the labeling process."
+    type: "supervisely.solution.DeployPretrainedModelNode"
+    parameters:
+      title: *deploy_pretrained_model_name
+      description: *deploy_pretrained_model_description
+      <<: *deploy_pretrained_model_position
+      icon: "mdi mdi-rocket-launch"
+      icon_color: "#4CAF50"
+      icon_bg_color: "#E8F5E9"
+
+  - id: &pre_labeling_id "pre_labeling"
+    name: &pre_labeling_name "Pre-labeling"
+    description: &pre_labeling_description "Automatically generate predictions for images using the deployed custom model."
+    type: "supervisely.solution.PreLabelingNode"
+    parameters:
+      title: *pre_labeling_name
+      description: *pre_labeling_description
+      <<: *pre_labeling_position # x, y
 
 connections:
   - id: "edge-auto_import-to-input_project"
@@ -497,4 +388,19 @@ connections:
   - id: "edge-compare_models-to-email_notification"
     source: *compare_models
     target: *email_notification
+    <<: *defaults_connection_settings
+
+  - id: "edge-deploy_pretrained_model-to-pre_labeling"
+    source: *deploy_pretrained_model_id
+    target: *pre_labeling_id
+    <<: *defaults_connection_settings
+
+  - id: "edge-smart_sampling-to-pre_labeling"
+    source: *smart_sampling_id
+    target: *pre_labeling_id
+    <<: *defaults_connection_settings
+
+  - id: "edge-pre_labeling-to-labeling_project"
+    source: *pre_labeling_id
+    target: *labeling_project_id
     <<: *defaults_connection_settings
