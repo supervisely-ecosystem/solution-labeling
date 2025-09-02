@@ -28,8 +28,14 @@ settings:
       &labeling_queue_performance_position { x: 950, y: 660 }
     move_labeled_data: &move_labeled_data_position { x: 612, y: 950 }
     train_val_split: &train_val_split_position { x: 612, y: 1040 }
-    training_project: &training_project_position { x: 600, y: 1140 }
+    training_project: &training_project_position { x: 620, y: 1140 }
     training_project_stats: &training_project_stats_position { x: 950, y: 1140 }
+    data_versioning: &data_versioning_position { x: 612, y: 1180 }
+    pretrained_models: &pretrained_models_position { x: 612, y: 1270 }
+    training_experiment: &training_experiment_position { x: 735, y: 1356 }
+    training_artifacts: &training_artifacts_position { x: 735, y: 1418 }
+    training_metrics: &training_metrics_position { x: 735, y: 1480 }
+    training_evaluation: &training_evaluation_position { x: 735, y: 1542 }
     all_experiments: &all_experiments_position { x: 1200, y: 1340 }
     re_evaluate: &re_evaluate_position { x: 1300, y: 1540 }
     evaluation_report: &evaluation_report_position { x: 1500, y: 1640 }
@@ -192,6 +198,84 @@ nodes:
       icon: "mdi mdi-chart-bar"
       link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/stats/datasets"
 
+  - id: &data_versioning_id "data_versioning"
+    name: &data_versioning_name "Data Versioning"
+    description: &data_versioning_description "Open the project versions page to explore the training project history changes."
+    type: "supervisely.solution.DataVersioningNode"
+    parameters:
+      title: *data_versioning_name
+      description: *data_versioning_description
+      <<: *data_versioning_position
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-history"
+      link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/versions"
+      tooltip_position: "right"
+    source:
+      - id: "training_project"
+        connection_settings:
+          <<: *defaults_connection_settings
+    events:
+      subscribe: []
+      publish: []
+
+  - id: &pretrained_models_id "pretrained_models"
+    name: &pretrained_models_name "Pretrained Models"
+    description: &pretrained_models_description "Select pretrained models and apply them to the training project."
+    type: "supervisely.solution.PretrainedModelsNode"
+    parameters:
+      title: *pretrained_models_name
+      description: *pretrained_models_description
+      <<: *pretrained_models_position
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
+      icon: "mdi mdi-robot"
+    source:
+      - id: "data_versioning"
+        connection_settings:
+          <<: *defaults_connection_settings
+    events:
+      subscribe: []
+      publish: []
+
+  - id: &training_experiment_id "training_experiment"
+    name: &training_experiment_name "Training Experiment"
+    description: &training_experiment_description "Link to the training experiment."
+    type: "supervisely.solution.TrainingExperimentNode"
+    parameters:
+      title: *training_experiment_name
+      description: *training_experiment_description
+      <<: *training_experiment_position
+      icon: "mdi mdi-file-star"
+
+  - id: &training_artifacts_id "training_artifacts"
+    name: &training_artifacts_name "Training Artifacts"
+    description: &training_artifacts_description "Link to the training artifacts of the model."
+    type: "supervisely.solution.TrainingArtifactsNode"
+    parameters:
+      title: *training_artifacts_name
+      description: *training_artifacts_description
+      <<: *training_artifacts_position
+      icon: "mdi mdi-folder-star"
+
+  - id: &training_metrics_id "training_metrics"
+    name: &training_metrics_name "Training Metrics"
+    description: &training_metrics_description "Open the training session metrics page."
+    type: "supervisely.solution.TrainingMetricsNode"
+    parameters:
+      title: *training_metrics_name
+      description: *training_metrics_description
+      <<: *training_metrics_position
+      icon: "mdi mdi-chart-line-variant"
+
+  - id: &training_evaluation_id "training_evaluation"
+    name: &training_evaluation_name "Training Evaluation Report"
+    description: &training_evaluation_description "View the evaluation report of the trained model."
+    type: "supervisely.solution.TrainingEvaluationReportNode"
+    parameters:
+      title: *training_evaluation_name
+      description: *training_evaluation_description
+      <<: *training_evaluation_position
+      icon: "mdi mdi-file-chart-check"
+
   - id: &all_experiments "all_experiments"
     name: &all_experiments_name "All Experiments"
     description: &all_experiments_description "Track all experiments in one place. The best model for comparison will be selected from the list of experiments based on the primary metric (mAP for detection, IoU for semantic segmentation)."
@@ -220,14 +304,14 @@ nodes:
       icon_bg_color: "#E3F2FD"
       tooltip_position: "right"
 
-  - id: &evaluation_report "evaluation_report"
-    name: &evaluation_report_name "Evaluation Report"
-    description: &evaluation_report_description "View the evaluation report of the model."
+  - id: &re_evaluation_report "re_evaluation_report"
+    name: &re_evaluation_report_name "Evaluation Report"
+    description: &re_evaluation_report_description "View the evaluation report of the model."
     type: "supervisely.solution.EvaluationReportNode"
     parameters:
-      title: *evaluation_report_name
-      description: *evaluation_report_description
-      <<: *evaluation_report_position
+      title: *re_evaluation_report_name
+      description: *re_evaluation_report_description
+      <<: *re_evaluation_report_position
       icon: "mdi mdi-file-chart-check"
 
   - id: &compare_models "compare_models"
@@ -365,14 +449,56 @@ connections:
     style:
       strokeDasharray: "8,8"
 
+  - id: "edge-training_project-to-data_versioning"
+    source: *training_project_id
+    target: *data_versioning_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-data_versioning-to-pretrained_models"
+    source: *data_versioning_id
+    target: *pretrained_models_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-pretrained_models-to-training_experiment"
+    source: *pretrained_models_id
+    target: *training_experiment_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-pretrained_models-to-training_artifacts"
+    source: *pretrained_models_id
+    target: *training_artifacts_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-pretrained_models-to-training_metrics"
+    source: *pretrained_models_id
+    target: *training_metrics_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
+  - id: "edge-pretrained_models-to-training_evaluation"
+    source: *pretrained_models_id
+    target: *training_evaluation_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
+
   - id: "edge-all_experiments-to-re_evaluate"
     source: *all_experiments
     target: *re_evaluate
     <<: *defaults_connection_settings
 
-  - id: "edge-re_evaluate-to-evaluation_report"
+  - id: "edge-re_evaluate-to-re_evaluation_report"
     source: *re_evaluate
-    target: *evaluation_report
+    target: *re_evaluation_report
     <<: *defaults_connection_settings
 
   - id: "edge-re_evaluate-to-compare_models"
