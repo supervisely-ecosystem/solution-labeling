@@ -9,7 +9,7 @@ if sly.fs.file_exists("src/config.yaml"):
 
 static_dir = "static"
 if not sly.fs.dir_exists(static_dir):
-    sly.fs.mkdir(static_dir, True)
+    sly.fs.mkdir(static_dir, False)
 
 app = sly.Application(
     layout=sly.app.widgets.Container([graph, *graph.modals], gap=0),
