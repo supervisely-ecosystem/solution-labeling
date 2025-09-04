@@ -52,7 +52,7 @@ settings:
 # All nodes in the graph
 nodes:
   # - id: "state_initialization"
-  #   # placeholder for future state initialization node
+    # placeholder for future state initialization node
 
   - id: &auto_import_id "auto_import" # unique ID for the node
     name: &auto_import_name "Manual D&D Import"
@@ -69,53 +69,29 @@ nodes:
       icon_bg_color: "#E3F2FD"
 
   - id: &cloud_import_id "cloud_import" # unique ID for the node
-    name: &cloud_import_name "Import from Cloud"
-    description: &cloud_import_description "Each import creates a dataset folder in the Input Project, centralising all incoming data and easily managing it over time. Automatically detects 10+ annotation formats."
     type: "supervisely.solution.CloudImportNode" # type of the node to import
     parameters:
-      title: *cloud_import_name
-      description: *cloud_import_description
       project_id: "{{ $PROJECT_ID | default('null') }}"
       <<: *cloud_import_position # x, y
-      icon: "mdi mdi-cloud-download"
-      icon_color: "#1976D2"
-      icon_bg_color: "#E3F2FD"
 
   - id: &input_project_id "input_project"
-    name: &input_project_name "Input Project"
-    description: &input_project_description "The Input Project is the central hub for all incoming data. Data in this project will not be modified."
     type: "supervisely.solution.InputProjectNode"
     parameters:
-      title: *input_project_name
-      description: *input_project_description
       project_id: "{{ $PROJECT_ID | default('null') }}"
-      tooltip_position: "right"
       <<: *input_project_position # x, y
 
-  - id: &open_ai_clip_id "open_ai_clip"
-    name: &open_ai_clip_name "OpenAI CLIP"
-    description: &open_ai_clip_description "OpenAI CLIP is a powerful model that can be used to generate embeddings for images in your project. These embeddings can be used for various tasks, such as image similarity search, prompt-based image retrieval. In this application, it is used to create an index and search images based on text prompts or clusters."
-    type: "supervisely.solution.OpenAIClipServiceNode"
-    parameters:
-      <<: *open_ai_clip_position # x, y
-      icon: "mdi mdi-apps"
-      icon_color: "#4CAF50"
-      icon_bg_color: "#E8F5E9"
+  # - id: &open_ai_clip_id "open_ai_clip"
+  #   type: "supervisely.solution.OpenAIClipServiceNode"
+  #   parameters:
+  #     <<: *open_ai_clip_position # x, y
 
-  - id: &ai_index_id "ai_index"
-    name: &ai_index_name "AI Index"
-    description: &ai_index_description "AI Search Index is a powerful tool that allows you to search for images in your dataset using AI models. It provides a quick and efficient way to find similar images based on visual features. You can use it in Smart Sampling node to select images for labeling based on specified prompt."
-    type: "supervisely.solution.AiIndexNode"
-    parameters:
-      <<: *ai_index_position # x, y
-      project_id: "{{ $PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-image-search"
-      icon_color: "#4CAF50"
-      icon_bg_color: "#E8F5E9"
+  # - id: &ai_index_id "ai_index"
+  #   type: "supervisely.solution.AiIndexNode"
+  #   parameters:
+  #     <<: *ai_index_position # x, y
+  #     project_id: "{{ $PROJECT_ID | default('null') }}"
 
   - id: &smart_sampling_id "smart_sampling"
-    name: "Smart Sampling"
-    description: "Selects a data sample from the input project and copies it to the labeling project. Supports various sampling strategies: random, k-means clustering, diversity-based, or using embeddings precomputed by the “AI Index” node for smarter selection."
     type: "supervisely.solution.SmartSamplingNode"
     parameters:
       project_id: "{{ $PROJECT_ID | default('null') }}"
@@ -123,18 +99,12 @@ nodes:
       <<: *smart_sampling_position # x, y
 
   - id: &labeling_project_id "labeling_project"
-    name: &labeling_project_name "Labeling Project"
-    description: &labeling_project_description "Project specifically for labeling data. All data in this project is in the labeling process. After labeling, data will be moved to the Training Project."
     type: "supervisely.solution.LabelingProjectNode"
     parameters:
-      title: *labeling_project_name
-      description: *labeling_project_description
       project_id: "{{ $LABELING_PROJECT_ID | default('null') }}"
       <<: *labeling_project_position
 
   - id: &labeling_queue_id "labeling_queue"
-    name: "Labeling Queue"
-    description: "Labeling Queue management. Labeling queue is a full annotation workflow where annotators pick the next available image from a shared queue. Once labeled, images are sent for review and quality check. Rejected images return to the same annotator."
     type: "supervisely.solution.LabelingQueueNode"
     parameters:
       <<: *labeling_queue_position
@@ -142,206 +112,106 @@ nodes:
       collection_id: "{{ $LABELING_COLLECTION_ID | default('null') }}"
 
   - id: &labeling_queue_performance_id "labeling_queue_performance"
-    name: &labeling_queue_performance_title "Labeling Performance"
-    description: &labeling_queue_performance_description "Labeling Queue performance metrics. This node tracks the performance of labeling jobs in the Labeling Queue. It provides real-time statistics on the number of images being labeled, reviewed, and approved."
     type: "supervisely.solution.LabelingQueuePerformanceNode"
     parameters:
       <<: *labeling_queue_performance_position
-      title: *labeling_queue_performance_title
-      description: *labeling_queue_performance_description
       queue_id: "{{ $LABELING_QUEUE_ID | default('null') }}"
-      icon: "mdi mdi-chart-bar"
-      icon_color: "#1976D2"
-      icon_bg_color: "#E3F2FD"
-
 
   - id: &train_val_split_id "train_val_split"
-    name: "Train/Val Split"
-    description: "Split dataset into Train and Validation sets for model training. Datasets structure mirrors the Input Project with splits organized in corresponding Collections (e.g., 'train_1', 'val_1', etc.)."
     type: "supervisely.solution.TrainValSplitNode"
     parameters:
       dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *train_val_split_position
-      icon: "mdi mdi-set-split"
 
   - id: &move_labeled_data_id "move_labeled_data"
-    name: "Move Labeled Data"
-    description: "Move labeled and accepted images to the Training Project."
     type: "supervisely.solution.MoveLabeledNode"
     parameters:
       src_project_id: "{{ $LABELING_PROJECT_ID | default('null') }}"
       dst_project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *move_labeled_data_position
-      icon: "mdi mdi-folder-move"
 
   - id: &training_project_id "training_project"
-    name: &training_project_name "Training Project"
-    description: &training_project_description "Project specifically for training data. All data in this project is in the training process. After training, data will be moved to the Training Project."
     type: "supervisely.solution.TrainingProjectNode"
     parameters:
-      # is_training: true
-      title: *training_project_name
-      description: *training_project_description
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *training_project_position
 
   - id: &training_project_stats_id "training_project_stats"
-    name: &training_project_stats_name "QA & Stats"
-    description: &training_project_stats_description "Open the QA & Stats page to explore detailed insights into the training project.."
     type: "supervisely.solution.QAStatsNode"
     parameters:
-      title: *training_project_stats_name
-      description: *training_project_stats_description
       <<: *training_project_stats_position
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-chart-bar"
       link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/stats/datasets"
 
   - id: &data_versioning_id "data_versioning"
-    name: &data_versioning_name "Data Versioning"
-    description: &data_versioning_description "Open the project versions page to explore the training project history changes."
     type: "supervisely.solution.DataVersioningNode"
     parameters:
-      title: *data_versioning_name
-      description: *data_versioning_description
       <<: *data_versioning_position
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-history"
       link: "/projects/{{ $TRAINING_PROJECT_ID | default('null') }}/versions"
-      tooltip_position: "right"
-    events:
-      subscribe: []
-      publish: []
 
   - id: &pretrained_models_id "pretrained_models"
-    name: &pretrained_models_name "Pretrained Models"
-    description: &pretrained_models_description "Select pretrained models and apply them to the training project."
-    type: "supervisely.solution.PretrainedModelsNode"
+    type: "supervisely.solution.BaseTrainNode"
     parameters:
-      title: *pretrained_models_name
-      description: *pretrained_models_description
       <<: *pretrained_models_position
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-robot"
 
   - id: &training_experiment_id "training_experiment"
-    name: &training_experiment_name "Training Experiment"
-    description: &training_experiment_description "Link to the training experiment."
     type: "supervisely.solution.TrainingExperimentNode"
     parameters:
-      title: *training_experiment_name
-      description: *training_experiment_description
       <<: *training_experiment_position
-      icon: "mdi mdi-file-star"
 
   - id: &training_artifacts_id "training_artifacts"
-    name: &training_artifacts_name "Training Artifacts"
-    description: &training_artifacts_description "Link to the training artifacts of the model."
     type: "supervisely.solution.TrainingArtifactsNode"
     parameters:
-      title: *training_artifacts_name
-      description: *training_artifacts_description
       <<: *training_artifacts_position
-      icon: "mdi mdi-folder-star"
 
   - id: &training_evaluation_id "training_evaluation"
-    name: &training_evaluation_name "Training Evaluation Report"
-    description: &training_evaluation_description "View the evaluation report of the trained model."
     type: "supervisely.solution.TrainingEvaluationReportNode"
     parameters:
-      title: *training_evaluation_name
-      description: *training_evaluation_description
       <<: *training_evaluation_position
-      icon: "mdi mdi-file-chart-check"
 
   - id: &all_experiments "all_experiments"
-    name: &all_experiments_name "All Experiments"
-    description: &all_experiments_description "Track all experiments in one place. The best model for comparison will be selected from the list of experiments based on the primary metric (mAP for detection, IoU for semantic segmentation)."
     type: "supervisely.solution.AllExperimentsNode"
     parameters:
-      title: *all_experiments_name
-      description: *all_experiments_description
       <<: *all_experiments_position
-      # project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-flask-outline"
-      icon_color: "#1976D2"
-      icon_bg_color: "#E3F2FD"
-      tooltip_position: "right"
 
   - id: &re_evaluate "re_evaluate"
-    name: &re_evaluate_name "Re-evaluate on new validation dataset"
-    description: &re_evaluate_description "Re-evaluate the best model on a new validation dataset."
     type: "supervisely.solution.EvaluationNode"
     parameters:
-      title: *re_evaluate_name
-      description: *re_evaluate_description
       <<: *re_evaluate_position
-      # project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      icon: "mdi mdi-chart-box"
-      icon_color: "#1976D2"
-      icon_bg_color: "#E3F2FD"
-      tooltip_position: "right"
 
   - id: &re_evaluation_report "re_evaluation_report"
-    name: &re_evaluation_report_name "Evaluation Report"
-    description: &re_evaluation_report_description "View the evaluation report of the model."
     type: "supervisely.solution.EvaluationReportNode"
     parameters:
-      title: *re_evaluation_report_name
-      description: *re_evaluation_report_description
+      description: "View the evaluation report of the model."
       <<: *re_evaluation_report_position
-      icon: "mdi mdi-file-chart-check"
 
   - id: &compare_models "compare_models"
-    name: &compare_models_name "Compare Models"
-    description: &compare_models_description "Compare evaluation results from the latest training session against the best model reference report. Helps track performance improvements over time and identify the most effective training setups. If the new model performs better, it can be used to re-deploy the NN model for pre-labeling to speed-up the process."
     type: "supervisely.solution.CompareModelsNode"
     parameters:
-      title: *compare_models_name
       project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
-      description: *compare_models_description
       <<: *compare_models_position
-      icon: "mdi mdi-compare"
 
   - id: &comparison_report "comparison_report"
-    name: &comparison_report_name "Comparison Report"
-    description: &comparison_report_description "View the comparison report of the models."
     type: "supervisely.solution.EvaluationReportNode"
     parameters:
-      title: *comparison_report_name
-      description: *comparison_report_description
+      description: "View the comparison report of the models."
       <<: *comparison_report_position
-      icon: "mdi mdi-file-chart-check"
 
   - id: &email_notification "email_notification"
-    name: &email_notification_name "Email Notification"
-    description: &email_notification_description "Automatically send email notifications after each model comparison. You can configure the recipients and subject of the email."
     type: "supervisely.solution.EmailNotificationNode"
     parameters:
-      title: *email_notification_name
-      description: *email_notification_description
       <<: *email_notification_position
-      icon: "mdi mdi-email"
 
   - id: &deploy_pretrained_model_id "deploy_pretrained_model"
-    name: &deploy_pretrained_model_name "Deploy Pretrained Model"
-    description: &deploy_pretrained_model_description "Deploy a pretrained model for pre-labeling to speed up the labeling process."
     type: "supervisely.solution.DeployPretrainedModelNode"
     parameters:
-      title: *deploy_pretrained_model_name
-      description: *deploy_pretrained_model_description
       <<: *deploy_pretrained_model_position
-      icon: "mdi mdi-rocket-launch"
-      icon_color: "#4CAF50"
-      icon_bg_color: "#E8F5E9"
 
   - id: &pre_labeling_id "pre_labeling"
-    name: &pre_labeling_name "Pre-labeling"
-    description: &pre_labeling_description "Automatically generate predictions for images using the deployed custom model."
     type: "supervisely.solution.PreLabelingNode"
     parameters:
-      title: *pre_labeling_name
-      description: *pre_labeling_description
       <<: *pre_labeling_position # x, y
 
 connections:
@@ -355,28 +225,28 @@ connections:
     target: *input_project_id
     <<: *defaults_connection_settings
 
-  - id: "edge-input_project-to-ai_index"
-    source: *input_project_id
-    target: *ai_index_id
-    <<: *defaults_connection_settings
-    style:
-      strokeDasharray: "8,8"
+  # - id: "edge-input_project-to-ai_index"
+  #   source: *input_project_id
+  #   target: *ai_index_id
+  #   <<: *defaults_connection_settings
+  #   style:
+  #     strokeDasharray: "8,8"
 
-  - id: "edge-open_ai_clip-to-ai_index"
-    source: *open_ai_clip_id
-    target: *ai_index_id
-    <<: *defaults_connection_settings
-    style:
-      # stroke: "#B1B1B6"
-      # strokeWidth: 1
-      strokeDasharray: "8,8"
+  # - id: "edge-open_ai_clip-to-ai_index"
+  #   source: *open_ai_clip_id
+  #   target: *ai_index_id
+  #   <<: *defaults_connection_settings
+  #   style:
+  #     # stroke: "#B1B1B6"
+  #     # strokeWidth: 1
+  #     strokeDasharray: "8,8"
 
-  - id: "edge-ai_index-to-smart_sampling"
-    source: *ai_index_id
-    target: *smart_sampling_id
-    <<: *defaults_connection_settings
-    style:
-      strokeDasharray: "8,8"
+  # - id: "edge-ai_index-to-smart_sampling"
+  #   source: *ai_index_id
+  #   target: *smart_sampling_id
+  #   <<: *defaults_connection_settings
+  #   style:
+  #     strokeDasharray: "8,8"
 
   - id: "edge-input_project-to-smart_sampling"
     source: *input_project_id
