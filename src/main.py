@@ -1,6 +1,9 @@
 import supervisely as sly
 import supervisely.solution as sly_solution
+from src.sly_functions import _download_js_bundle_files
 from src.state import State
+
+_download_js_bundle_files()
 
 state = State()  # todo: temp
 graph = sly_solution.GraphBuilder()
