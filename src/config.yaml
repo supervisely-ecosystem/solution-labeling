@@ -212,6 +212,11 @@ nodes:
     parameters:
       <<: *deploy_pretrained_model_position
 
+  - id: &deploy_custom_model_id "deploy_custom_model"
+    type: "supervisely.solution.DeployCustomModelNode"
+    parameters:
+      <<: *deploy_custom_model_position
+
   - id: &pre_labeling_id "pre_labeling"
     type: "supervisely.solution.PreLabelingNode"
     parameters:
@@ -368,4 +373,14 @@ connections:
   - id: "edge-pre_labeling-to-labeling_project"
     source: *pre_labeling_id
     target: *labeling_project_id
+    <<: *defaults_connection_settings
+
+  - id: "edge-compare_models-to-deploy_custom_model"
+    source: *compare_models
+    target: *deploy_custom_model_id
+    <<: *defaults_connection_settings
+
+  - id: "edge-deploy_custom_model-to-pre_labeling"
+    source: *deploy_custom_model_id
+    target: *pre_labeling_id
     <<: *defaults_connection_settings
