@@ -82,16 +82,16 @@ nodes:
       project_id: "{{ $PROJECT_ID | default('null') }}"
       <<: *input_project_position # x, y
 
-  # - id: &open_ai_clip_id "open_ai_clip"
-  #   type: "supervisely.solution.OpenAIClipServiceNode"
-  #   parameters:
-  #     <<: *open_ai_clip_position # x, y
+  - id: &open_ai_clip_id "open_ai_clip"
+    type: "supervisely.solution.OpenAIClipServiceNode"
+    parameters:
+      <<: *open_ai_clip_position # x, y
 
-  # - id: &ai_index_id "ai_index"
-  #   type: "supervisely.solution.AiIndexNode"
-  #   parameters:
-  #     <<: *ai_index_position # x, y
-  #     project_id: "{{ $PROJECT_ID | default('null') }}"
+  - id: &ai_index_id "ai_index"
+    type: "supervisely.solution.AiIndexNode"
+    parameters:
+      <<: *ai_index_position # x, y
+      project_id: "{{ $PROJECT_ID | default('null') }}"
 
   - id: &smart_sampling_id "smart_sampling"
     type: "supervisely.solution.SmartSamplingNode"
@@ -233,28 +233,28 @@ connections:
     target: *input_project_id
     <<: *defaults_connection_settings
 
-  # - id: "edge-input_project-to-ai_index"
-  #   source: *input_project_id
-  #   target: *ai_index_id
-  #   <<: *defaults_connection_settings
-  #   style:
-  #     strokeDasharray: "8,8"
+  - id: "edge-input_project-to-ai_index"
+    source: *input_project_id
+    target: *ai_index_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
 
-  # - id: "edge-open_ai_clip-to-ai_index"
-  #   source: *open_ai_clip_id
-  #   target: *ai_index_id
-  #   <<: *defaults_connection_settings
-  #   style:
-  #     # stroke: "#B1B1B6"
-  #     # strokeWidth: 1
-  #     strokeDasharray: "8,8"
+  - id: "edge-open_ai_clip-to-ai_index"
+    source: *open_ai_clip_id
+    target: *ai_index_id
+    <<: *defaults_connection_settings
+    style:
+      # stroke: "#B1B1B6"
+      # strokeWidth: 1
+      strokeDasharray: "8,8"
 
-  # - id: "edge-ai_index-to-smart_sampling"
-  #   source: *ai_index_id
-  #   target: *smart_sampling_id
-  #   <<: *defaults_connection_settings
-  #   style:
-  #     strokeDasharray: "8,8"
+  - id: "edge-ai_index-to-smart_sampling"
+    source: *ai_index_id
+    target: *smart_sampling_id
+    <<: *defaults_connection_settings
+    style:
+      strokeDasharray: "8,8"
 
   - id: "edge-input_project-to-smart_sampling"
     source: *input_project_id
