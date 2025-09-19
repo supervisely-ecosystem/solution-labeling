@@ -35,12 +35,12 @@ settings:
     training_experiment: &training_experiment_position { x: 735, y: 1450 }
     training_artifacts: &training_artifacts_position { x: 735, y: 1520 }
     training_evaluation: &training_evaluation_position { x: 735, y: 1590 }
-    all_experiments: &all_experiments_position { x: 1150, y: 1390 }
-    re_evaluate: &re_evaluate_position { x: 1300, y: 1450 }
-    evaluation_report: &re_evaluation_report_position { x: 1460, y: 1520 }
-    compare_models: &compare_models_position { x: 1334, y: 1640 }
-    comparison_report: &comparison_report_position { x: 1460, y: 1700 }
-    email_notification: &email_notification_position { x: 1460, y: 1760 }
+    all_experiments: &all_experiments_position { x: 1100, y: 1390 }
+    re_evaluate: &re_evaluate_position { x: 1065.8, y: 1520 }
+    evaluation_report: &re_evaluation_report_position { x: 1230, y: 1590 }
+    compare_models: &compare_models_position { x: 1350, y: 1700 }
+    comparison_report: &comparison_report_position { x: 1500, y: 1785 }
+    email_notification: &email_notification_position { x: 1500, y: 1850 }
     deploy_pretrained_model:
       &deploy_pretrained_model_position { x: 1220, y: 340 }
     deploy_custom_model: &deploy_custom_model_position { x: 1220, y: 522 }
@@ -54,7 +54,7 @@ settings:
 # All nodes in the graph
 nodes:
   # - id: "state_initialization"
-    # placeholder for future state initialization node
+  # placeholder for future state initialization node
 
   - id: &auto_import_id "auto_import" # unique ID for the node
     name: &auto_import_name "Manual D&D Import"
@@ -358,6 +358,11 @@ connections:
   - id: "edge-compare_models-to-email_notification"
     source: *compare_models
     target: *email_notification
+    <<: *defaults_connection_settings
+
+  - id: "edge-compare_models-to-all_experiments"
+    source: *compare_models
+    target: *all_experiments
     <<: *defaults_connection_settings
 
   - id: "edge-deploy_pretrained_model-to-pre_labeling"
