@@ -176,6 +176,7 @@ nodes:
   - id: &all_experiments "all_experiments"
     type: "supervisely.solution.AllExperimentsNode"
     parameters:
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
       <<: *all_experiments_position
 
   - id: &re_evaluate "re_evaluate"
@@ -290,6 +291,9 @@ connections:
   - id: "edge-move_labeled_data-to-training_project"
     source: *move_labeled_data_id
     target: *training_project_id
+    label: "Verified"
+    style:
+      color: "#4CAF50"
     <<: *defaults_connection_settings
 
   - id: "edge-training_project-to-training_project_stats"
@@ -327,11 +331,13 @@ connections:
   - id: "edge-pretrained_models-to-all_experiments"
     source: *pretrained_models_id
     target: *all_experiments
+    label: "Register Experiment"
     <<: *defaults_connection_settings
 
   - id: "edge-pretrained_models-to-compare_models"
     source: *pretrained_models_id
     target: *compare_models
+    label: "New Model"
     <<: *defaults_connection_settings
 
   - id: "edge-all_experiments-to-re_evaluate"
@@ -347,6 +353,7 @@ connections:
   - id: "edge-re_evaluation_report-to-compare_models"
     source: *re_evaluation_report
     target: *compare_models
+    label: "Best Model"
     <<: *defaults_connection_settings
 
   - id: "edge-compare_models-to-comparison_report"
@@ -372,6 +379,7 @@ connections:
   - id: "edge-smart_sampling-to-pre_labeling"
     source: *smart_sampling_id
     target: *pre_labeling_id
+    label: "if model deployed"
     <<: *defaults_connection_settings
 
   - id: "edge-pre_labeling-to-labeling_project"
@@ -383,6 +391,7 @@ connections:
     source: *compare_models
     target: *deploy_custom_model_id
     <<: *defaults_connection_settings
+    label: "if new model is better"
 
   - id: "edge-deploy_custom_model-to-pre_labeling"
     source: *deploy_custom_model_id
