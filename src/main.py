@@ -16,7 +16,7 @@ if not sly.fs.dir_exists(static_dir):
 
 app = sly.Application(
     layout=sly.app.widgets.Container([graph, *graph.modals], gap=0),
-    static_dir="static",
+    static_dir=static_dir,
     show_header=False,
 )
 app.call_before_shutdown(sly_solution.TasksScheduler().shutdown)

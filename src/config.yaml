@@ -46,6 +46,7 @@ settings:
     deploy_custom_model: &deploy_custom_model_position { x: 1220, y: 522 }
     # deploy
     pre_labeling: &pre_labeling_position { x: 850, y: 425 }
+    add_training_data: &add_training_data_position { x: 343, y: 1171 }
   defaults: &defaults
     width: 250
     connection_settings: &defaults_connection_settings
@@ -54,7 +55,7 @@ settings:
 # All nodes in the graph
 nodes:
   # - id: "state_initialization"
-    # placeholder for future state initialization node
+  # placeholder for future state initialization node
 
   - id: &auto_import_id "auto_import" # unique ID for the node
     name: &auto_import_name "Manual D&D Import"
@@ -217,6 +218,11 @@ nodes:
     parameters:
       <<: *pre_labeling_position # x, y
 
+  - id: &add_training_data_id "add_training_data"
+    type: "supervisely.solution.AddTrainingDataNode"
+    parameters:
+      <<: *add_training_data_position
+      project_id: "{{ $TRAINING_PROJECT_ID | default('null') }}"
 connections:
   - id: "edge-auto_import-to-input_project"
     source: *auto_import_id
@@ -368,4 +374,9 @@ connections:
   - id: "edge-pre_labeling-to-labeling_project"
     source: *pre_labeling_id
     target: *labeling_project_id
+    <<: *defaults_connection_settings
+
+  - id: "edge-add_training_data-to-training_project"
+    source: *training_project_id
+    target: *add_training_data_id
     <<: *defaults_connection_settings
