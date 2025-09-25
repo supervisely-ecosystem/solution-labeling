@@ -377,6 +377,6 @@ connections:
     <<: *defaults_connection_settings
 
   - id: "edge-add_training_data-to-training_project"
-    source: *training_project_id
-    target: *add_training_data_id
+    source: *add_training_data_id
+    target: *training_project_id
     <<: *defaults_connection_settings
