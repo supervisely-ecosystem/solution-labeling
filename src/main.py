@@ -15,7 +15,7 @@ if not sly.fs.dir_exists(static_dir):
     sly.fs.mkdir(static_dir, False)
 
 app = sly.Application(
-    layout=sly.app.widgets.Container([graph, *graph.modals], gap=0),
+    layout=sly.app.widgets.Container([graph, *graph.modals, *graph.extra_widgets], gap=0),
     static_dir="static",
     show_header=False,
 )
